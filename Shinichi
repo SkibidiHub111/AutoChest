@@ -38,6 +38,7 @@ end
 function tpToChest(chest)
     -- Kiểm tra xem chest có tồn tại và có cframe không
     if chest and chest:FindFirstChild("CFrame") then
+        -- Di chuyển đến chest bằng cách sử dụng CFrame
         humanoidRootPart.CFrame = chest.CFrame
         print("Teleporting to chest at: " .. tostring(chest.CFrame))
         wait(5)  -- Dừng 5 giây trước khi tiếp tục để đảm bảo teleport xong
