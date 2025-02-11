@@ -1,4 +1,4 @@
--- Đặt tên menu Shinichi Hub
+-- Menu hiển thị số tiền đã lụm được
 local player = game.Players.LocalPlayer
 local gui = player.PlayerGui:WaitForChild("ScreenGui")
 local menu = Instance.new("ScreenGui")
@@ -22,17 +22,7 @@ function updateMoney(amount)
     moneyLabel.Text = "Money Collected: " .. collectedMoney
 end
 
--- Hàm di chuyển đến vị trí của rương (chest)
-function tpToChest(chest)
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    
-    -- Di chuyển đến vị trí chest
-    humanoidRootPart.CFrame = chest.CFrame
-    wait(5)  -- Dừng 5 giây trước khi tiếp tục
-end
-
--- Hàm tìm tất cả các rương trong thế giới
+-- Tìm tất cả các rương chest trên đảo
 function findChests()
     local chests = {}
     for _, island in pairs(game.Workspace:GetChildren()) do
@@ -43,20 +33,23 @@ function findChests()
     return chests
 end
 
--- Hàm chuyển server sau khi hoàn thành
-function hopServer()
-    local TeleportService = game:GetService("TeleportService")
-    local placeId = game.PlaceId
-    TeleportService:Teleport(placeId, player)
+-- Teleport đến vị trí của chest
+function tpToChest(chest)
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    
+    -- Di chuyển đến vị trí chest
+    humanoidRootPart.CFrame = chest.CFrame
+    wait(5)  -- Dừng 5 giây trước khi tiếp tục
 end
 
--- Kiểm tra xem đã thu thập hết các rương trong server chưa
+-- Kiểm tra xem còn chest không
 function hasChestsLeft()
     local chests = findChests()
     return #chests > 0
 end
 
--- Tự động farm các rương trong Sea 1, Sea 2, Sea 3
+-- Tự động farm chest trong tất cả các biển
 function autoFarmSea(sea)
     while true do
         if hasChestsLeft() then
@@ -68,13 +61,6 @@ function autoFarmSea(sea)
                 -- Giả sử khi mở chest, bạn sẽ có tiền (update tiền lụm được)
                 if chest:FindFirstChild("Money") then
                     updateMoney(chest.Money.Value)
-                end
-                
-                -- Nếu có vật phẩm mới từ bản cập nhật Dragon (Dragonheart Sword, T-Rex, etc.)
-                if chest:FindFirstChild("DragonItem") then
-                    -- Xử lý các vật phẩm đặc biệt của bản cập nhật Dragon
-                    -- Lấy item từ chest và thực hiện hành động nếu cần
-                    print("Collected Dragon item: " .. chest.DragonItem.Name)
                 end
             end
         else
