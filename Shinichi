@@ -1,0 +1,98 @@
+-- Đặt tên menu Shinichi Hub
+local player = game.Players.LocalPlayer
+local gui = player.PlayerGui:WaitForChild("ScreenGui")
+local menu = Instance.new("ScreenGui")
+menu.Name = "Shinichi Hub"
+menu.Parent = gui
+
+-- Tạo menu hiển thị số tiền đã lụm được
+local moneyLabel = Instance.new("TextLabel")
+moneyLabel.Text = "Money Collected: 0"
+moneyLabel.Size = UDim2.new(0, 300, 0, 50)
+moneyLabel.Position = UDim2.new(0.5, -150, 0, 0)
+moneyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+moneyLabel.BackgroundTransparency = 1
+moneyLabel.Parent = menu
+
+local collectedMoney = 0
+
+-- Hàm cập nhật số tiền đã lụm được
+function updateMoney(amount)
+    collectedMoney = collectedMoney + amount
+    moneyLabel.Text = "Money Collected: " .. collectedMoney
+end
+
+-- Hàm di chuyển đến vị trí của rương (chest)
+function tpToChest(chest)
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    
+    -- Di chuyển đến vị trí chest
+    humanoidRootPart.CFrame = chest.CFrame
+    wait(5)  -- Dừng 5 giây trước khi tiếp tục
+end
+
+-- Hàm tìm tất cả các rương trong thế giới
+function findChests()
+    local chests = {}
+    for _, island in pairs(game.Workspace:GetChildren()) do
+        if island:IsA("Model") and island:FindFirstChild("Chest") then
+            table.insert(chests, island)
+        end
+    end
+    return chests
+end
+
+-- Hàm chuyển server sau khi hoàn thành
+function hopServer()
+    local TeleportService = game:GetService("TeleportService")
+    local placeId = game.PlaceId
+    TeleportService:Teleport(placeId, player)
+end
+
+-- Kiểm tra xem đã thu thập hết các rương trong server chưa
+function hasChestsLeft()
+    local chests = findChests()
+    return #chests > 0
+end
+
+-- Tự động farm các rương trong Sea 1, Sea 2, Sea 3
+function autoFarmSea(sea)
+    while true do
+        if hasChestsLeft() then
+            local chests = findChests()
+            
+            for _, chest in ipairs(chests) do
+                tpToChest(chest)
+                
+                -- Giả sử khi mở chest, bạn sẽ có tiền (update tiền lụm được)
+                if chest:FindFirstChild("Money") then
+                    updateMoney(chest.Money.Value)
+                end
+                
+                -- Nếu có vật phẩm mới từ bản cập nhật Dragon (Dragonheart Sword, T-Rex, etc.)
+                if chest:FindFirstChild("DragonItem") then
+                    -- Xử lý các vật phẩm đặc biệt của bản cập nhật Dragon
+                    -- Lấy item từ chest và thực hiện hành động nếu cần
+                    print("Collected Dragon item: " .. chest.DragonItem.Name)
+                end
+            end
+        else
+            print("No chests left in the server. Hopping to a new server in 5 seconds...")
+            wait(5)  -- Chờ 5 giây trước khi chuyển server
+            hopServer()  -- Chuyển server khi không còn chest
+        end
+        
+        wait(5) -- Chờ thêm 5 giây trước khi quét lại
+    end
+end
+
+-- Chạy auto farm cho từng Sea
+-- Sea 1
+autoFarmSea("Sea 1")
+
+-- Sea 2
+autoFarmSea("Sea 2")
+
+-- Sea 3
+autoFarmSea("Sea 3")
