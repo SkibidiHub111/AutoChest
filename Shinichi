@@ -1,5 +1,6 @@
--- Menu hiển thị số tiền đã lụm được
 local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local gui = player.PlayerGui:WaitForChild("ScreenGui")
 local menu = Instance.new("ScreenGui")
 menu.Name = "Shinichi Hub"
@@ -35,12 +36,14 @@ end
 
 -- Teleport đến vị trí của chest
 function tpToChest(chest)
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    
-    -- Di chuyển đến vị trí chest
-    humanoidRootPart.CFrame = chest.CFrame
-    wait(5)  -- Dừng 5 giây trước khi tiếp tục
+    -- Kiểm tra xem chest có tồn tại và có cframe không
+    if chest and chest:FindFirstChild("CFrame") then
+        humanoidRootPart.CFrame = chest.CFrame
+        print("Teleporting to chest at: " .. tostring(chest.CFrame))
+        wait(5)  -- Dừng 5 giây trước khi tiếp tục để đảm bảo teleport xong
+    else
+        print("Chest không có CFrame hợp lệ!")
+    end
 end
 
 -- Kiểm tra xem còn chest không
