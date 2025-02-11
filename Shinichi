@@ -1,5 +1,6 @@
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local gui = player.PlayerGui:WaitForChild("ScreenGui")
 local menu = Instance.new("ScreenGui")
@@ -34,17 +35,24 @@ function findChests()
     return chests
 end
 
--- Teleport đến vị trí của chest
-function tpToChest(chest)
-    -- Kiểm tra xem chest có tồn tại và có cframe không
-    if chest and chest:FindFirstChild("CFrame") then
-        -- Di chuyển đến chest bằng cách sử dụng CFrame
-        humanoidRootPart.CFrame = chest.CFrame
-        print("Teleporting to chest at: " .. tostring(chest.CFrame))
-        wait(5)  -- Dừng 5 giây trước khi tiếp tục để đảm bảo teleport xong
-    else
-        print("Chest không có CFrame hợp lệ!")
-    end
+-- Di chuyển đến chest sử dụng PathfindingService
+function moveToChest(chest)
+    -- Sử dụng PathfindingService để di chuyển đến vị trí của chest
+    local pathfindingService = game:GetService("PathfindingService")
+    local path = pathfindingService:CreatePath({
+        AgentRadius = 2, -- Độ rộng của nhân vật
+        AgentHeight = 5, -- Chiều cao nhân vật
+        AgentCanJump = true, -- Cho phép nhảy
+        AgentJumpHeight = 10, -- Chiều cao nhảy
+        AgentMaxSlope = 45 -- Góc độ nghiêng tối đa
+    })
+
+    path:ComputeAsync(humanoidRootPart.Position, chest.PrimaryPart.Position)
+    path:MoveTo(humanoidRootPart)
+
+    -- Đợi đến khi nhân vật di chuyển tới chest
+    path.Completed:Wait()
+    print("Arrived at chest!")
 end
 
 -- Kiểm tra xem còn chest không
@@ -58,10 +66,9 @@ function autoFarmSea(sea)
     while true do
         if hasChestsLeft() then
             local chests = findChests()
-            
+
             for _, chest in ipairs(chests) do
-                tpToChest(chest)
-                
+                moveToChest(chest)  -- Di chuyển đến chest
                 -- Giả sử khi mở chest, bạn sẽ có tiền (update tiền lụm được)
                 if chest:FindFirstChild("Money") then
                     updateMoney(chest.Money.Value)
